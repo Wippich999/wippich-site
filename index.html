@@ -12,6 +12,11 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#03070f">
+<script>
+  // liga as transições; se as bibliotecas não carregarem, mostra tudo normalmente
+  document.documentElement.classList.add('js-motion');
+  setTimeout(function () { if (!window.gsap) document.documentElement.classList.remove('js-motion'); }, 4000);
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,11 +26,11 @@
   --blue: #1a7cff;
   --blue-2: #0a5cf0;
   --cyan: #2fb4ff;
-  --bg: #03070f;
-  --bg-2: #050d1c;
-  --line: rgba(47,140,255,.28);
+  --bg: #050505;
+  --bg-2: #0a0a0a;
+  --line: rgba(255,255,255,.08);
   --text: #f3f7ff;
-  --muted: #b6c4da;
+  --muted: #b4b4b8;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,16 +48,110 @@ a { color: inherit; }
 /* ---------- HEADER ---------- */
 
 header {
-  position: absolute;
+  position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 20;
+  z-index: 50;
   height: 120px;
   padding: 0 4%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(to bottom, rgba(3,7,15,.92), rgba(3,7,15,0));
+  background: linear-gradient(to bottom, rgba(5,5,5,.92), rgba(5,5,5,0));
+  transition: height .45s cubic-bezier(.16,1,.3,1), background-color .45s, box-shadow .45s;
 }
+
+/* menu depois de rolar: mais baixo, com vidro fosco */
+header.is-fixo {
+  height: 84px;
+  background: rgba(5,5,5,.82);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(47,140,255,.18), 0 18px 40px rgba(0,0,0,.45);
+}
+@media (min-width: 1201px) {
+  header.is-fixo .logo svg { width: 72px; }
+  header.is-fixo .logo-name { font-size: 28px; }
+  header.is-fixo .logo-name span { font-size: 13px; margin-top: 5px; }
+}
+@media (max-width: 1200px) { header.is-fixo { height: 72px; } }
+.logo svg, .logo-name, .logo-name span { transition: width .45s cubic-bezier(.16,1,.3,1), font-size .45s cubic-bezier(.16,1,.3,1), margin .45s; }
+
+/* ---------- TRANSIÇÕES (motion.js) ---------- */
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+.progresso { position: fixed; inset: 0 0 auto; z-index: 60; height: 2px; pointer-events: none; }
+.progresso__barra {
+  display: block; height: 100%;
+  transform: scaleX(0); transform-origin: left center;
+  background: linear-gradient(90deg, #0a5cf0, #2fb4ff);
+  box-shadow: 0 0 10px rgba(47,180,255,.8);
+}
+html:not(.js-motion) .progresso { display: none; }
+
+/* evita "piscar" antes da animação de entrada */
+.js-motion :is(header > *, .hero-content > *, .hero-bg, .hero-fundo, .block h2) { opacity: 0; }
+
+/* rótulos em caixa alta: listra que atravessa + linha que se estende */
+.m-rotulo { position: relative; display: inline-block; }
+.m-letra { will-change: transform, opacity; }
+.m-listra {
+  position: absolute;
+  inset: -4px -8px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--blue-2), var(--cyan));
+  box-shadow: 0 0 18px rgba(47,180,255,.55);
+  transform: scaleX(0);
+  pointer-events: none;
+}
+.section-tag::after, .tag::before { transform: scaleX(var(--m-linha, 1)); transform-origin: left center; }
+.contact .section-tag::before { transform: scaleX(var(--m-linha, 1)); transform-origin: right center; }
+
+/* faixa azul translúcida atrás das linhas dos subtítulos (até o fim do bloco, sem invadir textos ao lado) */
+.m-faixa-alvo { position: relative; isolation: isolate; }
+.m-faixa {
+  position: absolute;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(26,124,255,.10), rgba(26,124,255,.30) 30%, rgba(26,124,255,.30) 88%, rgba(26,124,255,.06));
+  border-top: 1px solid rgba(47,140,255,.35);
+  border-bottom: 1px solid rgba(47,140,255,.35);
+  -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+  transform: scaleX(0);
+  pointer-events: none;
+}
+/* nas seções de fundo claro a faixa azul é mais suave */
+:is(.svc, .plans) .m-faixa { background: linear-gradient(90deg, rgba(26,124,255,.05), rgba(26,124,255,.16) 30%, rgba(26,124,255,.16) 88%, rgba(26,124,255,.03)); border-color: rgba(26,124,255,.28); }
+.m-char { will-change: transform, opacity, filter; }
+
+/* máscara das linhas dos títulos: folga para acentos e descendentes */
+.m-linha-mask { padding-block: .14em; margin-block: -.14em; }
+
+/* botões magnéticos (translate soma com o transform do :hover) */
+.m-ima { translate: var(--ima-x, 0px) var(--ima-y, 0px); }
+
+/* cursor com anel */
+html.tem-cursor { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 100 100'%3E%3Cpath d='M12 8 84 44 50 54 36 90Z' fill='%231a7cff' stroke='%23f3f7ff' stroke-width='7' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto; }
+html.tem-cursor :is(input, textarea) { cursor: text; }
+.cursor { position: fixed; left: 0; top: 0; z-index: 9999; width: 0; height: 0; pointer-events: none; opacity: 0; transition: opacity .3s; }
+.cursor.is-ativo { opacity: 1; }
+.cursor__anel {
+  position: absolute; left: -22px; top: -22px; width: 44px; height: 44px;
+  border-radius: 50%; border: 1px solid rgba(243,247,255,.35);
+  transition: width .3s, height .3s, left .3s, top .3s, background-color .3s, border-color .3s, transform .2s;
+}
+.cursor.is-link .cursor__anel { left: -32px; top: -32px; width: 64px; height: 64px; border-color: rgba(47,140,255,.75); background-color: rgba(26,124,255,.12); }
+.cursor.is-clique .cursor__anel { transform: scale(.85); }
+.cursor.is-rotulo .cursor__anel { left: -44px; top: -44px; width: 88px; height: 88px; border-color: transparent; background-color: rgba(26,124,255,.85); box-shadow: 0 0 30px rgba(26,124,255,.5); }
+.cursor__rotulo {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
+  color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  opacity: 0; transition: opacity .2s;
+}
+.cursor.is-rotulo .cursor__rotulo { opacity: 1; }
+@media print { .cursor { display: none; } }
 
 .logo {
   display: flex;
@@ -115,7 +214,7 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   padding: 15px 22px;
   border: 1.5px solid var(--blue);
   border-radius: 12px;
-  background: rgba(3,10,25,.55);
+  background: rgba(10,10,12,.55);
   font-size: 16px;
   font-weight: 500;
   text-decoration: none;
@@ -157,21 +256,49 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   animation: drift 18s ease-in-out infinite alternate;
 }
 
-/* a imagem fica num pseudo-elemento com bordas esfumadas: o mapa "nasce" do fundo escuro
-   em vez de parecer um retângulo colado (W e janelas de código não são afetados) */
-.scene-box::before {
+/* fundo do topo: vídeo do mapa só na área da direita — começa depois da coluna de texto
+   e abaixo do menu, com as bordas se dissolvendo no preto (nenhum texto fica por cima) */
+.hero-fundo {
+  position: absolute;
+  top: 70px; right: 0; bottom: 0;
+  width: min(66%, calc(100% - 620px));
+  z-index: 0;
+  background: var(--bg);
+  pointer-events: none;
+}
+/* o vídeo "nasce" do preto: vinheta oval + degradês longos em todos os lados,
+   para não aparecer contorno retangular (feito por cima do vídeo: funciona em qualquer navegador) */
+.hero-fundo::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: url("imagens/hero-bg.jpg") center / 100% 100% no-repeat;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 10%, #000 30%, #000 94%, transparent 100%),
-    linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%);
-  -webkit-mask-composite: source-in;
-          mask-image:
-    linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 10%, #000 30%, #000 94%, transparent 100%),
-    linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%);
-          mask-composite: intersect;
+  inset: -2px;
+  background:
+    radial-gradient(ellipse 62% 58% at 58% 52%, rgba(5,5,5,0) 40%, rgba(5,5,5,.55) 68%, rgba(5,5,5,.92) 86%, var(--bg) 100%),
+    linear-gradient(90deg, var(--bg) 0%, rgba(5,5,5,.75) 14%, rgba(5,5,5,0) 40%, rgba(5,5,5,0) 88%, rgba(5,5,5,.6) 100%),
+    linear-gradient(to bottom, var(--bg) 0%, rgba(5,5,5,.6) 12%, rgba(5,5,5,0) 30%, rgba(5,5,5,0) 70%, rgba(5,5,5,.7) 88%, var(--bg) 100%);
+}
+.hero-fundo video {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* escurece o azul-marinho do fundo do vídeo até quase o preto da página, mantendo as luzes */
+  filter: brightness(.78) contrast(1.7) saturate(1.2);
+}
+
+/* celular/tablet: o texto fica em cima e o vídeo vai embaixo dele, na área da cena */
+@media (max-width: 960px) {
+  .hero-bg { top: 0; bottom: auto; }
+  .hero-fundo {
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: calc(100vw * 9 / 16 + 30px);
+  }
+  .hero-fundo::after {
+    background:
+      radial-gradient(ellipse 70% 62% at 50% 52%, rgba(5,5,5,0) 38%, rgba(5,5,5,.6) 70%, var(--bg) 100%),
+      linear-gradient(to bottom, var(--bg) 0%, rgba(5,5,5,.6) 14%, rgba(5,5,5,0) 34%, rgba(5,5,5,0) 70%, var(--bg) 100%);
+  }
 }
 
 @keyframes drift {
@@ -281,7 +408,7 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   padding: 0 0 4% 0;
   border: 1px solid rgba(70,160,255,.75);
   border-radius: 1.1cqw;
-  background: rgba(3,12,30,.88);
+  background: rgba(10,10,12,.88);
   box-shadow: 0 0 2.5cqw rgba(26,124,255,.45), inset 0 0 1.5cqw rgba(26,124,255,.12);
   backdrop-filter: blur(4px);
   font-family: 'JetBrains Mono', monospace;
@@ -349,7 +476,7 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 15% 70%, rgba(26,124,255,.10), transparent 50%);
+  background: none; /* topo com um único tom de preto */
   pointer-events: none;
 }
 
@@ -359,7 +486,7 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   display: flex;
   align-items: center;
   gap: 14px;
-  color: #c9d6ea;
+  color: #d0d0d4;
   font-size: 16px;
   letter-spacing: 7px;
   text-transform: uppercase;
@@ -370,15 +497,21 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   content: "";
   width: 66px;
   height: 1px;
-  background: #c9d6ea;
+  background: #d0d0d4;
 }
 
 h1 {
   position: relative;
-  font-size: clamp(44px, 5.2vw, 84px);
+  font-size: clamp(38px, 4.4vw, 72px);
   font-weight: 800;
   line-height: 1.02;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+
+/* no computador cada linha do título fica inteira, mesmo se a fonte demorar a carregar */
+@media (min-width: 701px) {
+  h1 { white-space: nowrap; }
 }
 
 h1 .hl {
@@ -416,7 +549,7 @@ h1 .type-cursor {
   padding: 18px 36px;
   border: 2px solid var(--blue);
   border-radius: 14px;
-  background: rgba(3,10,25,.6);
+  background: rgba(10,10,12,.6);
   font-size: 20px;
   font-weight: 500;
   text-decoration: none;
@@ -437,7 +570,7 @@ h1 .type-cursor {
   grid-template-columns: repeat(5, 1fr);
   margin-top: -40px;
   padding: 10px 3% 50px;
-  background: linear-gradient(to bottom, rgba(3,7,15,0), var(--bg) 35%);
+  background: linear-gradient(to bottom, rgba(5,5,5,0), var(--bg) 35%);
 }
 
 .service {
@@ -471,7 +604,7 @@ section.block { padding: 110px 6%; }
   display: flex;
   align-items: center;
   gap: 14px;
-  color: #9fb0c8;
+  color: #a8a8ae;
   font-size: 15px;
   letter-spacing: 6px;
   text-transform: uppercase;
@@ -482,7 +615,7 @@ section.block { padding: 110px 6%; }
 .section-tag b { color: var(--blue); font-weight: 600; }
 .section-tag::after { content: ""; width: 120px; height: 1px; background: var(--blue); }
 
-h2 { font-size: clamp(34px, 4vw, 52px); line-height: 1.08; letter-spacing: -1px; }
+h2 { font-size: clamp(32px, 3.6vw, 50px); line-height: 1.04; letter-spacing: -.5px; text-transform: uppercase; font-weight: 700; }
 h2 span { color: var(--blue); }
 
 /* ABOUT */
@@ -493,7 +626,7 @@ h2 span { color: var(--blue); }
   gap: 70px;
   align-items: center;
   border-top: 1px solid var(--line);
-  background: linear-gradient(120deg, var(--bg) 40%, #06152e);
+  background: linear-gradient(120deg, var(--bg) 40%, #0e0e10);
 }
 
 .about-text {
@@ -511,7 +644,7 @@ h2 span { color: var(--blue); }
   padding: 24px 26px;
   border: 1px solid rgba(26,124,255,.55);
   border-radius: 12px;
-  background: rgba(4,14,32,.8);
+  background: rgba(14,14,16,.8);
   box-shadow: 0 0 30px rgba(26,124,255,.15);
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
@@ -526,35 +659,124 @@ h2 span { color: var(--blue); }
 
 .projects { background: var(--bg-2); border-top: 1px solid var(--line); }
 
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 34px;
-  margin-top: 50px;
+.projects { overflow: hidden; }
+
+.projects-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+}
+.projects-head p { max-width: 420px; color: var(--muted); font-size: 17px; line-height: 1.6; }
+
+/* faixa do portfólio: passa devagar para o lado, em loop, e pausa no hover */
+.portfolio {
+  position: relative;
+  margin: 56px calc(50% - 50vw) 0;
+  padding: 14px 0 20px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
 }
 
+.portfolio-track {
+  display: flex;
+  gap: 26px;
+  width: max-content;
+  animation: portfolio-loop var(--loop-dur, 40s) linear infinite;
+}
+.portfolio:hover .portfolio-track,
+.portfolio:focus-within .portfolio-track { animation-play-state: paused; }
+
+@keyframes portfolio-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-1 * var(--loop-dist, 50%))); }
+}
+
+/* cartão do portfólio: print ocupando tudo, escurecendo embaixo, texto por cima */
 .project {
+  position: relative;
+  flex: none;
   display: block;
+  width: 560px;
+  aspect-ratio: 640 / 460;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #040b18;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 28px;
+  background: #0b0b0b;
   text-decoration: none;
-  transition: transform .3s, border-color .3s, box-shadow .3s;
+  isolation: isolate;
+  transition: border-color .4s, box-shadow .4s;
 }
 
 .project img {
-  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -2;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  height: 100%;
   object-fit: cover;
   object-position: top;
+  transition: transform .8s cubic-bezier(.16,1,.3,1);
 }
 
-.project div { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; }
-.project h3 { font-size: 21px; font-weight: 600; }
-.project span { color: var(--blue); font-size: 15px; }
-.project:hover { transform: translateY(-6px); border-color: var(--blue); box-shadow: 0 0 35px rgba(26,124,255,.3); }
+.project::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, transparent 38%, rgba(5,5,5,.55) 58%, rgba(5,5,5,.94) 78%, #050505 100%);
+}
+
+.project-info {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 0 32px 30px;
+}
+.project-info small {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+.project h3 { color: #fff; font-size: 30px; font-weight: 500; letter-spacing: -.5px; line-height: 1.1; }
+
+.project-go {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  transition: background .35s, transform .45s cubic-bezier(.16,1,.3,1), box-shadow .35s;
+}
+.project-go svg { width: 18px; height: 18px; }
+
+.project:hover { border-color: rgba(26,124,255,.55); box-shadow: 0 0 40px rgba(26,124,255,.18); }
+.project:hover img { transform: scale(1.05); }
+.project:hover .project-go { background: var(--blue); transform: rotate(45deg); box-shadow: 0 0 22px rgba(26,124,255,.6); }
+
+@media (max-width: 900px) {
+  .projects-head { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .project { width: 300px; border-radius: 20px; }
+  .project h3 { font-size: 22px; }
+  .project-info { padding: 0 20px 20px; }
+  .project-info small { font-size: 11px; margin-bottom: 6px; }
+  .project-go { width: 38px; height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-track { animation: none; }
+  .portfolio { overflow-x: auto; }
+}
 
 /* HERO TEXT + BUTTONS (conteúdo novo) */
 
@@ -579,7 +801,7 @@ h2 span { color: var(--blue); }
   padding: 30px 28px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: rgba(4,12,28,.75);
+  background: rgba(14,14,16,.75);
   transition: transform .3s, border-color .3s, box-shadow .3s;
 }
 
@@ -631,7 +853,7 @@ h2 span { color: var(--blue); }
 
 /* DIFFERENTIALS */
 
-.diff { border-top: 1px solid var(--line); background: linear-gradient(200deg, #06152e, var(--bg) 60%); }
+.diff { border-top: 1px solid var(--line); background: linear-gradient(200deg, #0e0e10, var(--bg) 60%); }
 .diff-head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 60px; align-items: end; }
 .diff-head > p { color: var(--muted); font-size: 20px; line-height: 1.6; padding-left: 30px; border-left: 1.5px solid rgba(90,130,190,.45); }
 
@@ -648,7 +870,7 @@ h2 span { color: var(--blue); }
   padding: 32px 30px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: rgba(4,12,28,.6);
+  background: rgba(14,14,16,.6);
   transition: background .3s;
 }
 
@@ -753,9 +975,9 @@ h2 span { color: var(--blue); }
 
 .svc .svc-card:hover,
 .svc .svc-card.featured {
-  background: linear-gradient(160deg, #0a1a3a 0%, #050d1c 100%);
+  background: linear-gradient(160deg, #151517 0%, #0a0a0a 100%);
   border-color: var(--blue);
-  box-shadow: 0 22px 45px rgba(3,10,30,.3), 0 0 30px rgba(26,124,255,.22);
+  box-shadow: 0 22px 45px rgba(0,0,0,.3), 0 0 30px rgba(26,124,255,.22);
 }
 
 .svc .svc-card:hover { transform: translateY(-8px); }
@@ -834,11 +1056,11 @@ section.svc, section.plans {
 .diff {
   border-top: none;
   background:
-    radial-gradient(ellipse at 85% 0%, rgba(26,124,255,.14), transparent 55%),
+    radial-gradient(ellipse at 85% 0%, rgba(26,124,255,.05), transparent 55%),
     var(--bg);
 }
 
-.diff .section-tag { color: #9fb0c8; }
+.diff .section-tag { color: #a8a8ae; }
 .diff .section-tag b { color: var(--blue); }
 .diff .section-tag::after { background: var(--blue); }
 .diff h2 { color: #fff; }
@@ -860,12 +1082,12 @@ section.svc, section.plans {
   padding: 30px 28px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: rgba(4,12,28,.8);
+  background: rgba(14,14,16,.8);
   backdrop-filter: blur(6px);
   transition: transform .3s, background .3s, border-color .3s;
 }
 
-.diff .diff-item:hover { transform: translateY(-6px); background: rgba(8,22,48,.9); border-color: var(--blue); box-shadow: 0 0 30px rgba(26,124,255,.25); }
+.diff .diff-item:hover { transform: translateY(-6px); background: rgba(22,22,26,.9); border-color: var(--blue); box-shadow: 0 0 30px rgba(26,124,255,.25); }
 
 .diff-ico {
   flex: none;
@@ -883,7 +1105,7 @@ section.svc, section.plans {
 
 /* PLANS */
 
-.plans { border-top: 1px solid var(--line); background: linear-gradient(160deg, #06152e, var(--bg) 55%); }
+.plans { border-top: 1px solid var(--line); background: linear-gradient(160deg, #0e0e10, var(--bg) 55%); }
 .plans-sub { margin-top: 16px; color: var(--muted); font-size: 20px; }
 
 .plans-grid {
@@ -901,7 +1123,7 @@ section.svc, section.plans {
   padding: 40px 38px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(4,12,28,.85);
+  background: rgba(14,14,16,.85);
   transition: transform .3s, border-color .3s, box-shadow .3s;
 }
 
@@ -990,7 +1212,7 @@ section.svc, section.plans {
   border: 1px solid var(--line);
   border-left: 3px solid var(--blue);
   border-radius: 12px;
-  background: rgba(4,12,28,.7);
+  background: rgba(14,14,16,.7);
 }
 
 .perk-tag { display: inline-block; margin-bottom: 10px; padding: 3px 10px; border-radius: 20px; background: rgba(26,124,255,.16); color: var(--cyan); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
@@ -1034,9 +1256,9 @@ section.svc, section.plans {
 
 /* plano em destaque: card azul */
 .plans .plan.featured {
-  background: linear-gradient(160deg, #0a1a3a 0%, #050d1c 100%);
+  background: linear-gradient(160deg, #151517 0%, #0a0a0a 100%);
   border: 1.5px solid var(--blue);
-  box-shadow: 0 26px 50px rgba(3,10,30,.35), 0 0 35px rgba(26,124,255,.25);
+  box-shadow: 0 26px 50px rgba(0,0,0,.35), 0 0 35px rgba(26,124,255,.25);
 }
 
 .plans .plan.featured .plan-icon { color: var(--blue); }
@@ -1075,13 +1297,13 @@ section.svc, section.plans {
 .contact {
   text-align: center;
   border-top: 1px solid var(--line);
-  background: radial-gradient(ellipse at 50% 0%, rgba(26,124,255,.18), transparent 60%), var(--bg);
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,124,255,.07), transparent 60%), var(--bg);
 }
 
 .contact .section-tag { justify-content: center; }
 .contact .section-tag::before { content: ""; width: 120px; height: 1px; background: var(--blue); }
 
-.contact p { margin: 20px auto 40px; max-width: 560px; color: var(--muted); font-size: 20px; }
+.contact > p { margin: 20px auto 40px; max-width: 560px; color: var(--muted); font-size: 20px; }
 
 .contact-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
 
@@ -1120,6 +1342,478 @@ footer small { color: #5f7290; font-size: 13px; }
 
 /* ---------- RESPONSIVE ---------- */
 
+/* ---------- FAIXA DE CÓDIGO ---------- */
+.code-strip {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background:
+    linear-gradient(90deg, rgba(26,124,255,.06), rgba(26,124,255,.02) 50%, rgba(26,124,255,.06)),
+    #070708;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.code-strip-track {
+  display: flex;
+  width: max-content;
+  animation: code-loop 70s linear infinite;
+}
+.code-strip:hover .code-strip-track { animation-play-state: paused; }
+.code-strip-group { display: flex; flex: none; }
+@keyframes code-loop { to { transform: translateX(-50%); } }
+
+.cs-item {
+  display: inline-block;
+  line-height: 1.6;
+  padding: 0 34px;
+  color: #d8dde8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  white-space: nowrap;
+}
+/* separador entre trechos: pontinho azul brilhante */
+.cs-item::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 6px; height: 6px;
+  margin-left: 68px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 10px var(--blue);
+}
+.cs-item b { font-weight: 400; }
+.cs-item .k { color: #c792ea; }
+.cs-item .f { color: #82aaff; }
+.cs-item .s { color: #c3e88d; }
+.cs-item .t { color: #7fdbff; }
+.cs-item .p { color: #89ddff; }
+.cs-item .a { color: #ffcb6b; }
+.cs-item .c { color: #5c6b85; font-style: italic; }
+
+@media (max-width: 700px) {
+  .code-strip { padding: 16px 0; }
+  .cs-item { font-size: 13px; padding: 0 22px; }
+  .cs-item::after { margin-left: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .code-strip-track { animation: none; } }
+
+/* ---------- CARTÃO DE ORÇAMENTO (contato) ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.orc {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 56px;
+  max-width: 1360px;
+  margin: 10px auto 0;
+  padding: 64px 64px 56px;
+  border: 1px solid rgba(26,124,255,.35);
+  border-radius: 34px;
+  background:
+    radial-gradient(ellipse 60% 90% at 0% 30%, rgba(26,124,255,.22), transparent 70%),
+    linear-gradient(110deg, #0a1730 0%, #0d0f14 45%, #0b0b0d 100%);
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.7), 0 0 60px rgba(26,124,255,.08);
+  text-align: left;
+  overflow: hidden;
+}
+
+/* lado do WhatsApp */
+.orc-wa { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+.orc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+  padding: 9px 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  background: rgba(0,0,0,.35);
+  color: #e6ebf5;
+  font-size: 14px;
+  font-weight: 500;
+}
+.orc-pill i {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 0 rgba(26,124,255,.7);
+  animation: orc-pulso 2s ease-out infinite;
+}
+@keyframes orc-pulso {
+  0%   { box-shadow: 0 0 0 0 rgba(26,124,255,.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(26,124,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(26,124,255,0); }
+}
+.orc-wa h3 {
+  margin-bottom: 26px;
+  color: #fff;
+  font-size: clamp(26px, 2.3vw, 36px);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.15;
+  letter-spacing: -.3px;
+}
+.orc-wa h3 em { color: var(--blue); font-style: normal; text-shadow: 0 0 30px rgba(26,124,255,.35); }
+
+.orc-lista { list-style: none; margin-bottom: 36px; }
+.orc-lista li {
+  position: relative;
+  padding-left: 34px;
+  margin-bottom: 13px;
+  color: #dde3ee;
+  font-size: 16px;
+}
+.orc-lista li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 1px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(26,124,255,.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f8bff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center / 13px no-repeat;
+}
+
+.orc-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 19px 40px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2f8bff, #0a4fd8);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 18px 36px -10px rgba(26,124,255,.65), inset 0 1px 0 rgba(255,255,255,.25);
+  transition: transform .3s, box-shadow .3s, filter .3s;
+}
+.orc-wa-btn svg { width: 20px; height: 20px; }
+.orc-wa-btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 24px 44px -10px rgba(26,124,255,.8), inset 0 1px 0 rgba(255,255,255,.25); }
+
+/* divisor "ou" */
+.orc-ou { position: relative; display: flex; align-items: center; justify-content: center; width: 1px; }
+.orc-ou::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 1px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,.14) 12%, rgba(255,255,255,.14) 88%, transparent); }
+.orc-ou span { position: relative; padding: 10px 0; background: #0d0f14; color: #8a93a6; font-size: 13px; }
+
+/* formulário */
+.orc-form { display: flex; flex-direction: column; gap: 14px; }
+.orc-form-titulo { margin: 0 0 4px !important; color: #fff !important; font-size: 16px !important; font-weight: 600; max-width: none !important; }
+.orc-linha { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.orc-campo { display: block; }
+.orc-campo input, .orc-campo textarea {
+  width: 100%;
+  padding: 19px 22px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+  transition: border-color .25s, background .25s, box-shadow .25s;
+}
+.orc-campo textarea { min-height: 130px; resize: vertical; }
+.orc-campo input::placeholder, .orc-campo textarea::placeholder { color: #8a93a6; }
+.orc-campo input:focus, .orc-campo textarea:focus { border-color: var(--blue); background: rgba(26,124,255,.06); box-shadow: 0 0 0 4px rgba(26,124,255,.15); }
+.orc-campo .invalido { border-color: #ff5a5f; box-shadow: 0 0 0 4px rgba(255,90,95,.12); }
+
+.orc-enviar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 12px 12px 26px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2f8bff, #0a4fd8);
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 18px 36px -12px rgba(26,124,255,.7), inset 0 1px 0 rgba(255,255,255,.25);
+  transition: transform .3s, box-shadow .3s, filter .3s;
+}
+.orc-enviar span {
+  display: grid;
+  place-items: center;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.28);
+  transition: transform .4s cubic-bezier(.16,1,.3,1);
+}
+.orc-enviar span svg { width: 16px; height: 16px; }
+.orc-enviar:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.orc-enviar:hover span { transform: rotate(45deg); }
+
+.orc-nota { display: flex; align-items: center; gap: 8px; margin: 2px 0 0 !important; color: #8a93a6 !important; font-size: 13px !important; max-width: none !important; }
+.orc-nota svg { width: 14px; height: 14px; flex: none; }
+.orc-nota.erro { color: #ff8a8e !important; }
+
+@media (max-width: 1000px) {
+  .orc { grid-template-columns: 1fr; gap: 34px; padding: 40px 28px; border-radius: 26px; }
+  .orc-ou { width: auto; height: 1px; }
+  .orc-ou::before { top: 0; bottom: auto; left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14) 12%, rgba(255,255,255,.14) 88%, transparent); }
+  .orc-ou span { padding: 0 12px; }
+}
+@media (max-width: 560px) {
+  .orc-linha { grid-template-columns: 1fr; }
+  .orc-wa-btn { align-self: stretch; justify-content: center; }
+}
+
+/* ---------- ENTREGA (antiga seção de planos) ---------- */
+
+.ent-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; }
+.ent-head h2 { max-width: 760px; }
+.ent-lead { max-width: 380px; color: #4a5873; font-size: 18px; line-height: 1.6; }
+.ent-lead strong { color: #0b1530; }
+
+.ent-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 28px;
+  margin-top: 56px;
+  align-items: stretch;
+}
+
+/* cartão escuro de destaque com o prazo */
+.ent-destaque {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 40px 40px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #151517 0%, #0a0a0a 100%);
+  border: 1px solid rgba(26,124,255,.35);
+  box-shadow: 0 26px 50px rgba(0,0,0,.25), 0 0 40px rgba(26,124,255,.14);
+  color: #f3f7ff;
+}
+.ent-destaque::before {
+  content: "";
+  position: absolute;
+  right: -120px; top: -120px;
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,124,255,.22), transparent 65%);
+  pointer-events: none;
+}
+
+.ent-prazo { display: flex; align-items: center; gap: 22px; margin-bottom: 30px; }
+.ent-prazo strong {
+  font-size: clamp(76px, 7.5vw, 112px);
+  font-weight: 800;
+  line-height: .9;
+  letter-spacing: -4px;
+  background: linear-gradient(180deg, #ffffff, #7fb6ff);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+.ent-prazo strong small { font-size: .45em; letter-spacing: 0; margin-left: 4px; }
+.ent-prazo span {
+  padding-left: 22px;
+  border-left: 1px solid rgba(255,255,255,.15);
+  color: #b4b4b8;
+  font-size: 15px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.ent-destaque p { color: #c8c8cc; font-size: 17px; line-height: 1.7; margin-bottom: 14px; }
+.ent-destaque p b { color: #fff; font-weight: 600; }
+
+/* linha do tempo das etapas */
+.ent-etapas {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 26px 0 34px;
+  counter-reset: etapa;
+}
+.ent-etapas li {
+  position: relative;
+  padding-top: 30px;
+  color: #d0d0d4;
+  font-size: 14px;
+  font-weight: 500;
+  counter-increment: etapa;
+}
+.ent-etapas li::before {
+  content: counter(etapa, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 0;
+  display: grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 12px rgba(26,124,255,.6);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+.ent-etapas li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 30px; right: 8px; top: 10.5px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--blue), rgba(26,124,255,.15));
+}
+
+.ent-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 26px;
+  border-radius: 12px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 0 28px rgba(26,124,255,.45);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+.ent-btn svg { width: 18px; height: 18px; transition: transform .25s; }
+.ent-btn:hover { background: #3a8fff; box-shadow: 0 0 40px rgba(26,124,255,.65); transform: translateY(-2px); }
+.ent-btn:hover svg { transform: translateX(4px); }
+
+/* diferenciais */
+.ent-difs-titulo {
+  margin-bottom: 18px;
+  color: #5b6b86;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+.ent-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; padding: 6px 10px 14px 0; }
+
+/* balões: parados por padrão; ao passar o mouse, clicar ou tocar, afundam
+   um instante, sobem e ficam flutuando, com a borda acendendo em degradê azul */
+.ent-cards { counter-reset: dif; }
+.ent-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 30px 28px 28px;
+  border: 1.5px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f6f8fc 100%) padding-box,
+    linear-gradient(135deg, #0a0a0a, #0a0a0a) border-box;
+  box-shadow:
+    0 1px 2px rgba(10,10,10,.06),
+    0 12px 24px -12px rgba(10,20,50,.16),
+    0 30px 60px -28px rgba(10,20,50,.22);
+  counter-increment: dif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .6s cubic-bezier(.16,1,.3,1), box-shadow .6s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes flutuar {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -10px; }
+}
+
+/* ativo: hover no computador ou toque/clique (classe .is-ativo) */
+.ent-card:hover,
+.ent-card.is-ativo {
+  transform: translateY(-12px);
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%) padding-box,
+    linear-gradient(135deg, #0a0a0a 0%, #1a7cff 45%, #6fd0ff 70%, #0a0a0a 100%) border-box;
+  box-shadow:
+    0 1px 2px rgba(10,10,10,.06),
+    0 24px 40px -14px rgba(10,60,160,.28),
+    0 60px 100px -30px rgba(10,60,160,.4);
+  animation: flutuar 3.2s ease-in-out .6s infinite;
+}
+/* apertar: afunda rapidinho antes de subir */
+.ent-card:active { transform: translateY(-4px) scale(.985); transition-duration: .15s; }
+
+/* numeração 01–04 no canto */
+.ent-card::before {
+  content: counter(dif, decimal-leading-zero);
+  position: absolute;
+  top: 26px; right: 26px;
+  color: #b9c2d3;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  transition: color .4s;
+}
+.ent-card:is(:hover, .is-ativo)::before { color: var(--blue); }
+
+/* brilho azul que acompanha o mouse */
+.ent-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), rgba(26,124,255,.14), transparent 60%);
+  opacity: 0;
+  transition: opacity .4s;
+}
+.ent-card:is(:hover, .is-ativo)::after { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ent-card:hover, .ent-card.is-ativo { animation: none; }
+}
+
+.ent-ico {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  margin-bottom: 22px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #3a8fff 0%, #0a4fd8 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 12px 24px -6px rgba(26,124,255,.55);
+  color: #fff;
+  transition: transform .5s cubic-bezier(.16,1,.3,1);
+}
+.ent-card:is(:hover, .is-ativo) .ent-ico { transform: rotate(-8deg) scale(1.08); }
+.ent-ico svg { width: 24px; height: 24px; }
+.ent-card h4 { margin-bottom: 10px; color: #0a0a0a; font-size: 20px; font-weight: 700; letter-spacing: -.3px; line-height: 1.25; }
+.ent-card p { color: #4a5873; font-size: 15px; line-height: 1.65; }
+
+/* etiqueta "Contratado à parte" junto do título */
+.ent-tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: #0a0a0a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .ent-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .ent-head { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .ent-cards { grid-template-columns: 1fr; }
+  .ent-destaque { padding: 32px 24px; }
+  .ent-prazo { gap: 16px; }
+  .ent-prazo span { font-size: 12px; padding-left: 16px; }
+  .ent-etapas li { font-size: 12px; }
+  .ent-btn { align-self: stretch; justify-content: center; }
+}
+
 @media (max-width: 1450px) {
   nav { gap: 34px; }
   nav a { font-size: 16px; }
@@ -1147,7 +1841,6 @@ footer small { color: #5f7290; font-size: 13px; }
   .service:last-child { grid-column: 1 / -1; }
   .about { grid-template-columns: 1fr; gap: 40px; }
   .about-text { padding-left: 24px; }
-  .projects-grid { grid-template-columns: 1fr; }
   .plans-grid, .perks { grid-template-columns: 1fr; }
   .mvv, .svc-grid, .steps { grid-template-columns: 1fr 1fr; }
   .steps::before { display: none; }
@@ -1209,7 +1902,7 @@ footer small { color: #5f7290; font-size: 13px; }
     <a href="#sobre">Sobre</a>
     <a href="#servicos">Serviços</a>
     <a href="#projetos">Projetos</a>
-    <a href="#planos">Planos</a>
+    <a href="#planos">Entrega</a>
     <a href="#contato">Contato</a>
   </nav>
 
@@ -1222,23 +1915,9 @@ footer small { color: #5f7290; font-size: 13px; }
 <main>
 
 <section class="hero" id="inicio">
-  <div class="hero-bg" role="img" aria-label="Mapa-múndi digital com o W da Wippich em holograma">
+  <div class="hero-fundo" aria-hidden="true"><video src="videos/hero-mapa.mp4" poster="videos/hero-mapa-poster.jpg" autoplay muted loop playsinline preload="auto"></video></div>
+  <div class="hero-bg" role="img" aria-label="Mapa-múndi digital em azul neon">
     <div class="scene-box">
-      <div class="scan"></div>
-      <div class="w-glow"></div>
-      <div class="beam"></div>
-      <div class="platform"><i></i><i></i><i></i></div>
-      <img class="w-float" src="imagens/w-holo.png" alt="">
-
-      <div class="code-win left" aria-hidden="true">
-        <div class="code-bar"><i></i><i></i><i></i></div>
-        <div class="code-body"><div class="code-nums">1<br>2<br>3<br>4<br>5<br>6</div><div class="code-text" data-code="left"></div></div>
-      </div>
-
-      <div class="code-win right" aria-hidden="true">
-        <div class="code-bar"><i></i><i></i><i></i></div>
-        <div class="code-body"><div class="code-nums">1<br>2<br>3<br>4<br>5<br>6</div><div class="code-text" data-code="right"></div></div>
-      </div>
     </div>
   </div>
 
@@ -1281,6 +1960,30 @@ footer small { color: #5f7290; font-size: 13px; }
     <p>WhatsApp<br>Integrado</p>
   </div>
 </section>
+
+<!-- faixa de código rolando entre os destaques e "Quem somos" -->
+<div class="code-strip" aria-hidden="true">
+  <div class="code-strip-track">
+    <div class="code-strip-group">
+      <span class="cs-item"><b class="k">const</b> site = <b class="f">criar</b>({ design: <b class="s">"sob medida"</b> });</span>
+      <span class="cs-item"><b class="k">await</b> site.<b class="f">publicar</b>(<b class="s">"36h"</b>);</span>
+      <span class="cs-item"><b class="p">&lt;</b><b class="t">Wippich</b> <b class="a">tecnologia</b>=<b class="s">"sob medida"</b> <b class="p">/&gt;</b></span>
+      <span class="cs-item"><b class="k">if</b> (cliente.<b class="f">clicou</b>()) { <b class="k">return</b> <b class="f">contato</b>(); }</span>
+      <span class="cs-item">seo.<b class="f">otimizar</b>(<b class="s">"google"</b>);</span>
+      <span class="cs-item">whatsapp.<b class="f">integrar</b>({ resposta: <b class="s">"rápida"</b> });</span>
+      <span class="cs-item"><b class="c">// do clique ao cliente</b></span>
+    </div>
+    <div class="code-strip-group">
+      <span class="cs-item"><b class="k">const</b> site = <b class="f">criar</b>({ design: <b class="s">"sob medida"</b> });</span>
+      <span class="cs-item"><b class="k">await</b> site.<b class="f">publicar</b>(<b class="s">"36h"</b>);</span>
+      <span class="cs-item"><b class="p">&lt;</b><b class="t">Wippich</b> <b class="a">tecnologia</b>=<b class="s">"sob medida"</b> <b class="p">/&gt;</b></span>
+      <span class="cs-item"><b class="k">if</b> (cliente.<b class="f">clicou</b>()) { <b class="k">return</b> <b class="f">contato</b>(); }</span>
+      <span class="cs-item">seo.<b class="f">otimizar</b>(<b class="s">"google"</b>);</span>
+      <span class="cs-item">whatsapp.<b class="f">integrar</b>({ resposta: <b class="s">"rápida"</b> });</span>
+      <span class="cs-item"><b class="c">// do clique ao cliente</b></span>
+    </div>
+  </div>
+</div>
 
 <section class="block about" id="sobre">
   <div>
@@ -1402,80 +2105,93 @@ footer small { color: #5f7290; font-size: 13px; }
 </section>
 
 <section class="block projects" id="projetos">
-  <div class="section-tag"><span>Nossos <b>projetos</b></span></div>
-  <h2>Marcas que já estão online <span>com a gente.</span></h2>
+  <div class="projects-head">
+    <div>
+      <div class="section-tag"><span>Nosso <b>portfólio</b></span></div>
+      <h2>Nossos feitos <span>falam por nós.</span></h2>
+    </div>
+    <p>Cada projeto é criado do zero para o negócio do cliente. Passe o mouse para pausar e clique para visitar o site no ar.</p>
+  </div>
 
-  <div class="projects-grid">
-    <a class="project" href="https://mwrefrigeracao.com.br/" target="_blank" rel="noopener">
-      <img src="imagens/mw-refrigeracao.png" alt="Site da MW Refrigeração criado pela Wippich Tecnologia" loading="lazy">
-      <div><h3>MW Refrigeração</h3><span>Visitar site →</span></div>
-    </a>
-    <a class="project" href="https://2wingenieria.com/" target="_blank" rel="noopener">
-      <img src="imagens/2w-ingenieria.png" alt="Site da 2W Ingeniería criado pela Wippich Tecnologia" loading="lazy">
-      <div><h3>2W Ingeniería</h3><span>Visitar site →</span></div>
-    </a>
+  <!--
+    PORTFÓLIO: para adicionar um site novo, copie um bloco <a class="project">…</a>
+    e troque: link (href), imagem (print do site em imagens/), categoria (small) e nome (h3).
+    A faixa se ajusta sozinha à quantidade de sites.
+  -->
+  <div class="portfolio" aria-label="Portfólio de sites criados pela Wippich Tecnologia">
+    <div class="portfolio-track">
+      <a class="project" data-cursor="Ver" href="https://mwrefrigeracao.com.br/" target="_blank" rel="noopener">
+        <img src="imagens/mw-refrigeracao.png" alt="Site da MW Refrigeração criado pela Wippich Tecnologia" loading="lazy">
+        <div class="project-info">
+          <div><small>Site institucional · Refrigeração</small><h3>MW Refrigeração</h3></div>
+          <span class="project-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </div>
+      </a>
+      <a class="project" data-cursor="Ver" href="https://2wingenieria.com/" target="_blank" rel="noopener">
+        <img src="imagens/2w-ingenieria.png" alt="Site da 2W Ingeniería criado pela Wippich Tecnologia" loading="lazy">
+        <div class="project-info">
+          <div><small>Site institucional · Engenharia</small><h3>2W Ingeniería</h3></div>
+          <span class="project-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </div>
+      </a>
+    </div>
   </div>
 </section>
 
-<section class="block plans" id="planos">
-  <div class="section-tag"><span>Nossos <b>planos</b></span></div>
-  <h2>Preço justo, <span>sem letra miúda.</span></h2>
-  <p class="plans-sub">Você paga uma vez pelo site e conta com a gente para sempre.</p>
-
-  <div class="plans-grid">
-    <article class="plan featured">
-      <span class="plan-badge">Mais completo</span>
-      <div class="plan-icon">&lt;/&gt;</div>
-      <h3>Site + hospedagem</h3>
-      <p>Nada de modelo pronto. Criamos o seu site do zero, moderno e do seu jeito.</p>
-      <ul>
-        <li>Página única de alta conversão</li>
-        <li>Copy persuasiva inclusa</li>
-        <li>Integração com WhatsApp e formulário</li>
-        <li>SEO técnico + analytics</li>
-        <li>Entrega em até 3 dias</li>
-      </ul>
-      <div class="price"><small>R$</small><strong>200</strong><span>/ pagamento único</span></div>
-      <div class="hosting">
-        <div>
-          <span class="hosting-label">☁ Hospedagem</span>
-          <span class="hosting-free">1º mês grátis</span>
-        </div>
-        <div class="hosting-price"><small>R$</small> <strong>69,90</strong><span> / mês</span></div>
-      </div>
-      <a href="#contato" class="plan-btn">Quero meu site →</a>
-    </article>
-
-    <article class="plan featured">
-      <div class="plan-icon">&lt;/&gt;</div>
-      <h3>Só o site</h3>
-      <p>Já tem onde hospedar? Você recebe o site pronto, sem mensalidade com a gente.</p>
-      <ul>
-        <li>Página única de alta conversão</li>
-        <li>Copy persuasiva inclusa</li>
-        <li>Integração com WhatsApp e formulário</li>
-        <li>SEO técnico + analytics</li>
-        <li>Entrega em até 3 dias</li>
-      </ul>
-      <div class="price"><small>R$</small><strong>250</strong><span>/ pagamento único</span></div>
-      <div class="hosting">
-        <span class="hosting-label">Sem hospedagem</span>
-        <span class="hosting-note">sem mensalidade</span>
-      </div>
-      <a href="#contato" class="plan-btn">Quero só o site →</a>
-    </article>
+<section class="block plans entrega" id="planos">
+  <div class="ent-head">
+    <div>
+      <div class="section-tag"><span>Como <b>entregamos</b></span></div>
+      <h2>Seu site profissional, <span>entregue em até 36 horas</span></h2>
+    </div>
+    <p class="ent-lead">Desenvolvimento <strong>100% personalizado</strong>, com acompanhamento em todas as etapas.</p>
   </div>
 
-  <div class="perks">
-    <div class="perk">
-      <span class="perk-tag green">Incluso</span>
-      <h4>Hospedagem por R$ 69,90/mês, 1º mês grátis</h4>
-      <p>Nós hospedamos o seu site por apenas R$ 69,90 por mês, e o primeiro mês é grátis.</p>
-    </div>
-    <div class="perk">
-      <span class="perk-tag">Incluso</span>
-      <h4>Suporte vitalício e gratuito</h4>
-      <p>Um diferencial que poucas empresas oferecem: depois que seu site fica pronto, você continua contando com a gente, para sempre e sem pagar nada a mais por isso.</p>
+  <div class="ent-grid">
+    <article class="ent-destaque">
+      <div class="ent-prazo">
+        <strong>36<small>h</small></strong>
+        <span>prazo máximo de entrega<br>após a aprovação do projeto</span>
+      </div>
+      <p>Cada projeto é criado do zero, de acordo com a identidade visual, os objetivos e o público do seu negócio. <b>Não utilizamos modelos prontos.</b></p>
+      <p>Você acompanha todo o desenvolvimento e aprova cada etapa antes da publicação.</p>
+      <ol class="ent-etapas" aria-label="Etapas do projeto">
+        <li>Briefing</li>
+        <li>Criação</li>
+        <li>Aprovação</li>
+        <li>Publicação</li>
+      </ol>
+      <a href="https://wa.me/554799646069?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento." target="_blank" rel="noopener" class="ent-btn">
+        Solicitar orçamento
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </a>
+    </article>
+
+    <div class="ent-difs">
+      <h3 class="ent-difs-titulo">Nossos diferenciais</h3>
+      <div class="ent-cards">
+        <article class="ent-card">
+          <div class="ent-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.4-4-7.8-9-7.8Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></div>
+          <h4>Totalmente personalizado</h4>
+          <p>Layout, cores, textos, páginas e funcionalidades são definidos de acordo com a necessidade da sua empresa.</p>
+        </article>
+        <article class="ent-card">
+          <div class="ent-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5M12 2.5V5"/></svg></div>
+          <h4>Entrega em até 36 horas</h4>
+          <p>Agilidade com qualidade. Seu site é publicado em até 36 horas após a aprovação do projeto.</p>
+        </article>
+        <article class="ent-card">
+          <div class="ent-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h4>Acompanhamento em todas as etapas</h4>
+          <p>Você tem visibilidade total do processo, do briefing à publicação, e pode solicitar ajustes durante o desenvolvimento.</p>
+        </article>
+        <article class="ent-card">
+          <div class="ent-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.9-9.9A6 6 0 0 1 17.6 9 4.5 4.5 0 0 1 17 18H7Z"/><path d="m9.5 13 2 2 3.5-3.5"/></svg></div>
+          <span class="ent-tag">Contratado à parte</span>
+          <h4>Serviço de hospedagem</h4>
+          <p>Oferecemos hospedagem como serviço independente, contratada separadamente. Ela inclui manutenção do ambiente e suporte técnico para manter seu site sempre disponível.</p>
+        </article>
+      </div>
     </div>
   </div>
 </section>
@@ -1483,17 +2199,40 @@ footer small { color: #5f7290; font-size: 13px; }
 <section class="block contact" id="contato">
   <div class="section-tag"><span>Fale <b>conosco</b></span></div>
   <h2>Bora colocar sua empresa <span>na frente?</span></h2>
-  <p>Conte o que você precisa e receba um orçamento sem compromisso. A gente responde rápido.</p>
+  <p>Conte o que você precisa e receba uma proposta sem compromisso, com escopo, valor e prazo.</p>
 
-  <div class="contact-links">
-    <a class="primary" href="https://wa.me/554799646069?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento." target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
-      Chamar no WhatsApp
-    </a>
-    <a href="mailto:wippichtecnologia@gmail.com">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6 8.5 7 8.5-7"/></svg>
-      wippichtecnologia@gmail.com
-    </a>
+  <div class="orc">
+    <div class="orc-wa">
+      <span class="orc-pill"><i></i>Agenda com vagas limitadas por mês</span>
+      <h3>O jeito mais rápido: fale direto com a gente <em>no WhatsApp.</em></h3>
+      <ul class="orc-lista">
+        <li>Design para celular e computador</li>
+        <li>Desenvolvimento e publicação no seu domínio</li>
+        <li>Formulários e WhatsApp testados</li>
+        <li>Site entregue em até 36 horas após a aprovação</li>
+      </ul>
+      <a class="orc-wa-btn" href="https://wa.me/554799646069?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento." target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+        Chamar no WhatsApp
+      </a>
+    </div>
+
+    <div class="orc-ou" aria-hidden="true"><span>ou</span></div>
+
+    <form class="orc-form" id="orc-form" novalidate>
+      <p class="orc-form-titulo">Prefere escrever com calma? Envie pelo formulário.</p>
+      <div class="orc-linha">
+        <label class="orc-campo"><span class="sr-only">Seu nome</span><input name="nome" type="text" placeholder="Seu nome" autocomplete="name" required></label>
+        <label class="orc-campo"><span class="sr-only">WhatsApp com DDD</span><input name="whats" type="tel" placeholder="WhatsApp com DDD" autocomplete="tel" inputmode="tel" required></label>
+      </div>
+      <label class="orc-campo"><span class="sr-only">Link do seu site atual (opcional)</span><input name="site" type="text" placeholder="Link do seu site atual (opcional)" autocomplete="url"></label>
+      <label class="orc-campo"><span class="sr-only">Conte sobre o projeto</span><textarea name="projeto" rows="4" placeholder="Conte sobre o projeto: site institucional, loja virtual ou sistema?" required></textarea></label>
+      <button type="submit" class="orc-enviar">
+        Enviar e abrir WhatsApp
+        <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+      </button>
+      <p class="orc-nota" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/></svg><span>Seus dados vão só para a conversa da proposta.</span></p>
+    </form>
   </div>
 </section>
 
@@ -1533,62 +2272,6 @@ footer small { color: #5f7290; font-size: 13px; }
     setTimeout(tick, 600);
   })();
 
-  // efeito de digitação nas janelas de código do topo
-  const snippets = {
-    left: [
-      [['k','const '],['f','app'],['',' = () => {']],
-      [['','  '],['k','return'],['',' (']],
-      [['','    '],['p','<'],['t','Wippich'],['p',' />']],
-      [['','  );']],
-      [['','};']],
-      [['f','app'],['','();']]
-    ],
-    right: [
-      [['k','if'],['',' (success) {']],
-      [['','  '],['k','return'],['',' '],['f','innovation'],['','();']],
-      [['','}']],
-      [['','']],
-      [['k','return'],['',' '],['t','technology'],['',';']],
-      [['','// Wippich']]
-    ]
-  };
-
-  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function render(lines, count) {
-    let left = count, html = '';
-    lines.forEach((line, i) => {
-      if (left < 0) return;
-      line.forEach(([cls, txt]) => {
-        if (left <= 0) return;
-        const part = txt.slice(0, left);
-        left -= txt.length;
-        html += cls ? `<span class="${cls}">${esc(part)}</span>` : esc(part);
-      });
-      if (left > 0 && i < lines.length - 1) { html += '\n'; left -= 1; }
-    });
-    return html;
-  }
-
-  function typeLoop(el, lines, startDelay) {
-    const total = lines.reduce((n, l) => n + l.reduce((m, [, t]) => m + t.length, 0), 0) + lines.length - 1;
-    if (reduced) { el.innerHTML = render(lines, total); return; }
-    let n = 0, dir = 1;
-    const step = () => {
-      el.innerHTML = render(lines, n) + '<span class="cursor"></span>';
-      if (dir === 1 && n >= total) { dir = -1; return setTimeout(step, 2600); }
-      if (dir === -1 && n <= 0) { dir = 1; return setTimeout(step, 700); }
-      n += dir === 1 ? 1 : -3;
-      if (n < 0) n = 0;
-      setTimeout(step, dir === 1 ? 45 + Math.random() * 60 : 18);
-    };
-    setTimeout(step, startDelay);
-  }
-
-  typeLoop(document.querySelector('[data-code="left"]'), snippets.left, 300);
-  typeLoop(document.querySelector('[data-code="right"]'), snippets.right, 1400);
-
   // destaca o item do menu conforme a seção visível
   const links = document.querySelectorAll('nav a');
   const observer = new IntersectionObserver(entries => {
@@ -1600,6 +2283,118 @@ footer small { color: #5f7290; font-size: 13px; }
   }, { rootMargin: '-45% 0px -50% 0px' });
   document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
 </script>
+
+<script>
+  // portfólio: repete os cartões para a faixa passar em loop contínuo, sem emenda
+  (function () {
+    const track = document.querySelector('.portfolio-track');
+    if (!track || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const originais = [...track.children];
+    const VELOCIDADE = 35; // pixels por segundo (menor = mais devagar)
+
+    function montar() {
+      [...track.querySelectorAll('[data-clone]')].forEach(c => c.remove());
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      const larguraSet = () => track.scrollWidth + gap;
+      // completa um "conjunto" até cobrir a tela inteira
+      while (larguraSet() < innerWidth * 1.1) {
+        originais.forEach(o => track.appendChild(clonar(o)));
+      }
+      const dist = larguraSet();
+      // duplica o conjunto todo: quando a 1ª metade sai, a 2ª está no mesmo lugar
+      [...track.children].forEach(o => track.appendChild(clonar(o)));
+      track.style.setProperty('--loop-dist', dist + 'px');
+      track.style.setProperty('--loop-dur', (dist / VELOCIDADE) + 's');
+    }
+    function clonar(el) {
+      const c = el.cloneNode(true);
+      c.setAttribute('data-clone', '');
+      c.setAttribute('aria-hidden', 'true');
+      c.setAttribute('tabindex', '-1');
+      return c;
+    }
+    montar();
+    let t;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(montar, 200); });
+  })();
+</script>
+
+<script>
+  // balões de diferenciais: tocar/clicar faz o balão subir e flutuar (toque de novo ou fora para soltar)
+  (function () {
+    const cards = document.querySelectorAll('.ent-card');
+    cards.forEach(c => c.addEventListener('click', e => {
+      e.stopPropagation();
+      const ativo = !c.classList.contains('is-ativo');
+      cards.forEach(o => o.classList.remove('is-ativo'));
+      c.classList.toggle('is-ativo', ativo);
+    }));
+    document.addEventListener('click', () => cards.forEach(o => o.classList.remove('is-ativo')));
+  })();
+</script>
+
+<script>
+  // formulário de orçamento: sem servidor — monta a mensagem e abre a conversa no WhatsApp
+  (function () {
+    const form = document.getElementById('orc-form');
+    if (!form) return;
+    const WHATSAPP = '554799646069';
+    const nota = form.querySelector('.orc-nota span');
+    const notaBox = form.querySelector('.orc-nota');
+    const textoNota = nota.textContent;
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const obrig = [form.nome, form.whats, form.projeto];
+      obrig.forEach(c => c.classList.toggle('invalido', !c.value.trim()));
+      const faltando = obrig.find(c => !c.value.trim());
+      if (faltando) {
+        notaBox.classList.add('erro');
+        nota.textContent = 'Preencha seu nome, WhatsApp e conte um pouco sobre o projeto.';
+        faltando.focus();
+        return;
+      }
+      const msg =
+        'Olá! Quero um orçamento de site.\n\n' +
+        'Nome: ' + form.nome.value.trim() + '\n' +
+        'WhatsApp: ' + form.whats.value.trim() + '\n' +
+        (form.site.value.trim() ? 'Site atual: ' + form.site.value.trim() + '\n' : '') +
+        '\nProjeto: ' + form.projeto.value.trim();
+      const url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+      const janela = window.open(url, '_blank');
+      if (janela) janela.opener = null;
+      else location.href = url; // se o navegador bloquear a nova aba
+      notaBox.classList.remove('erro');
+      nota.textContent = 'Pronto! Sua mensagem foi aberta no WhatsApp.';
+      form.reset();
+      setTimeout(() => { nota.textContent = textoNota; }, 6000);
+    });
+    form.querySelectorAll('input, textarea').forEach(c =>
+      c.addEventListener('input', () => {
+        c.classList.remove('invalido');
+        if (notaBox.classList.contains('erro')) { notaBox.classList.remove('erro'); nota.textContent = textoNota; }
+      }));
+  })();
+</script>
+
+<script>
+  // vídeo do topo: parado para quem pediu menos movimento; pausa quando sai da tela (economiza bateria)
+  (function () {
+    const v = document.querySelector('.hero-fundo video');
+    if (!v) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { v.removeAttribute('autoplay'); v.pause(); return; }
+    new IntersectionObserver(([e]) => { e.isIntersecting ? v.play().catch(() => {}) : v.pause(); }).observe(v);
+  })();
+</script>
+
+<div class="progresso" aria-hidden="true"><span class="progresso__barra"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
+<script src="motion.js" defer></script>
 
 </body>
 </html>
