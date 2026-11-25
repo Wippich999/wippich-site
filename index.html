@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wippich Tecnologia | Inovação Digital</title>
 <meta name="description" content="Wippich Tecnologia: criação de sites profissionais, desenvolvimento personalizado, hospedagem segura e suporte especializado.">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#03070f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -148,8 +154,24 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   width: min(100cqw, 100cqh * 1672 / 941);
   aspect-ratio: 1672 / 941;
   container-type: size;
-  background: url("imagens/hero-bg.jpg") center / 100% 100% no-repeat;
   animation: drift 18s ease-in-out infinite alternate;
+}
+
+/* a imagem fica num pseudo-elemento com bordas esfumadas: o mapa "nasce" do fundo escuro
+   em vez de parecer um retângulo colado (W e janelas de código não são afetados) */
+.scene-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("imagens/hero-bg.jpg") center / 100% 100% no-repeat;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 10%, #000 30%, #000 94%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image:
+    linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 10%, #000 30%, #000 94%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, #000 22%, #000 70%, transparent 100%);
+          mask-composite: intersect;
 }
 
 @keyframes drift {
@@ -320,9 +342,7 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background:
-    linear-gradient(to right, var(--bg) 0%, rgba(3,7,15,0) 9%),
-    linear-gradient(to bottom, var(--bg) 0%, rgba(3,7,15,0) 18%, rgba(3,7,15,0) 72%, var(--bg) 100%);
+  /* no desktop as bordas já são esfumadas pela máscara da .scene-box::before */
 }
 
 .hero::before {
@@ -1100,17 +1120,6 @@ footer small { color: #5f7290; font-size: 13px; }
 
 /* ---------- RESPONSIVE ---------- */
 
-.scene-box::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(to right, var(--bg) 0%, rgba(3,7,15,0) 7%),
-    linear-gradient(to bottom, var(--bg) 0%, rgba(3,7,15,0) 12%, rgba(3,7,15,0) 85%, var(--bg) 100%);
-  pointer-events: none;
-}
-
 @media (max-width: 1450px) {
   nav { gap: 34px; }
   nav a { font-size: 16px; }
@@ -1131,7 +1140,7 @@ footer small { color: #5f7290; font-size: 13px; }
   .header-btn span { display: none; }
   .hero { min-height: auto; flex-direction: column; align-items: flex-start; padding: 120px 6% 0; }
   .hero-bg { position: relative; order: 2; width: 112%; margin: 30px -6% 0; aspect-ratio: 1672 / 941; }
-  .hero-bg::after { background: linear-gradient(to bottom, var(--bg) 0%, rgba(3,7,15,0) 25%, rgba(3,7,15,0) 70%, var(--bg) 100%); }
+  .hero-bg::after { background: none; }
   .description { font-size: 21px; }
   .services { grid-template-columns: repeat(2, 1fr); margin-top: 0; row-gap: 20px; }
   .service { border-right: none; }
