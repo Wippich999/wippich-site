@@ -257,16 +257,16 @@ nav a:hover::after, nav a.active::after { transform: scaleX(1); }
 }
 
 /* vídeo da capa: ao lado da frase (texto à esquerda, vídeo à direita), sem nada por cima dele.
-   Computador: vídeo quadrado. Celular/tablet: vídeo retangular (16:9) abaixo do texto */
+   Computador: vídeo 16:9 em alta (capa-site-pc). Celular/tablet: vídeo menor 16:9 (capa-site-celular) abaixo do texto */
 .hero { gap: 4%; }
 .hero-content { flex: 0 0 auto; width: min(620px, 47%); }
 .capa-video { position: relative; z-index: 2; flex: 1 1 0; min-width: 0; }
 .capa-video video {
   display: block;
   width: 100%;
-  max-width: 600px;
+  max-width: 820px;
   margin-left: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,.08);
@@ -1911,7 +1911,7 @@ footer small { color: #5f7290; font-size: 13px; }
     </div>
   </div>
 
-  <div class="capa-video"><video poster="videos/capa-site-poster.jpg" autoplay muted loop playsinline preload="auto"><source src="videos/capa-site-celular.mp4" media="(max-width: 960px)" type="video/mp4"><source src="videos/capa-site-quadrado.mp4" type="video/mp4"></video></div>
+  <div class="capa-video"><video poster="videos/capa-site-poster.jpg" autoplay muted loop playsinline preload="auto"><source src="videos/capa-site-celular.mp4" media="(max-width: 960px)" type="video/mp4"><source src="videos/capa-site-pc.mp4" type="video/mp4"></video></div>
 </section>
 
 <section class="services" aria-label="Destaques">
